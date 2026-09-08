@@ -14,4 +14,4 @@ RUN chown -R www-data:www-data /var/www/html
 EXPOSE 80
 
 HEALTHCHECK --interval=15s --timeout=5s --retries=5 --start-period=20s \
-  CMD php -r "$c=@file_get_contents('http://127.0.0.1/health.php'); exit($c===false?1:0);"
+  CMD php -r '$c=@file_get_contents("http://127.0.0.1/health.php"); exit($c===false?1:0);'

@@ -76,7 +76,7 @@ services:
     networks:
       - backend
     healthcheck:
-      test: ["CMD", "php", "-r", "$c=@file_get_contents('http://127.0.0.1/health.php'); exit($c===false?1:0);"]
+      test: ["CMD", "php", "-r", "$$c=@file_get_contents('http://127.0.0.1/health.php'); exit($$c===false?1:0);"]
       interval: 15s
       timeout: 5s
       retries: 5
