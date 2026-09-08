@@ -5,20 +5,41 @@ LIST="$ROOT/modules/modules.list"
 
 mkdir -p "$ROOT/modules"
 
-while IFS='|' read -r dest repo; do
+while IFS='|' read -r dest repo ref; do
   [[ -z "${dest:-}" || "$dest" =~ ^[[:space:]]*# ]] && continue
   dest="${dest//[[:space:]]/}"
   repo="${repo//[[:space:]]/}"
+  ref="${ref//[[:space:]]/}"
+
+  if [[ -z "$dest" || -z "$repo" || -z "$ref" ]]; then
+    echo "ERRO: linha inválida em modules.list: $dest|$repo|$ref"
+    exit 1
+  fi
+
   target="$ROOT/modules/$dest"
 
   if [[ -d "$target/.git" ]]; then
-    echo "[update] $dest"
-    git -C "$target" fetch --prune
-    git -C "$target" pull --ff-only
+    if ! git -C "$target" diff --quiet || ! git -C "$target" diff --cached --quiet; then
+      echo "ERRO: módulo $dest possui alterações locais. Não sobrescrevendo."
+      exit 1
+    fi
+    echo "[fetch] $dest"
+    git -C "$target" fetch --prune --tags origin
   else
     echo "[clone] $dest"
-    git clone "$repo" "$target"
+    git clone --no-checkout "$repo" "$target"
+    git -C "$target" fetch --prune --tags origin
+  fi
+
+  echo "[pin] $dest -> $ref"
+  git -C "$target" checkout --detach "$ref"
+
+  actual="$(git -C "$target" rev-parse HEAD)"
+  expected="$(git -C "$target" rev-parse "${ref}^{commit}")"
+  if [[ "$actual" != "$expected" ]]; then
+    echo "ERRO: $dest ficou em $actual, esperado $expected"
+    exit 1
   fi
 done < "$LIST"
 
-echo "Módulos preparados."
+echo "Módulos preparados nas versões aprovadas."

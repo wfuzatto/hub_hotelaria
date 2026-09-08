@@ -1,8 +1,14 @@
 name: ${STACK_NAME:-hub-hotelaria}
 
+x-default-logging: &default-logging
+  driver: local
+  options:
+    max-size: "20m"
+    max-file: "5"
+
 services:
   gateway:
-    image: ${CADDY_IMAGE:-caddy:2-alpine}
+    image: ${CADDY_IMAGE:-caddy:2.11.4-alpine}
     restart: unless-stopped
     env_file: .env
     ports:
@@ -24,9 +30,10 @@ services:
     security_opt:
       - no-new-privileges:true
     stop_grace_period: 30s
+    logging: *default-logging
 
   mysql:
-    image: ${MYSQL_IMAGE:-mysql:8.4}
+    image: ${MYSQL_IMAGE:-mysql:8.4.11}
     restart: unless-stopped
     env_file: .env
     environment:
@@ -53,6 +60,7 @@ services:
     security_opt:
       - no-new-privileges:true
     stop_grace_period: 1m
+    logging: *default-logging
 
   hub-core:
     build:
@@ -84,6 +92,7 @@ services:
     security_opt:
       - no-new-privileges:true
     stop_grace_period: 30s
+    logging: *default-logging
 
   totem-api:
     build:
@@ -117,6 +126,7 @@ services:
     security_opt:
       - no-new-privileges:true
     stop_grace_period: 30s
+    logging: *default-logging
 
   face-scanner:
     build:
@@ -145,9 +155,10 @@ services:
     security_opt:
       - no-new-privileges:true
     stop_grace_period: 30s
+    logging: *default-logging
 
   backup-helper:
-    image: alpine:3.20
+    image: alpine:3.23
     profiles: ["tools"]
     command: ["sh", "-c", "echo backup-helper-ready"]
     volumes:
@@ -156,6 +167,7 @@ services:
       - backend
     security_opt:
       - no-new-privileges:true
+    logging: *default-logging
 
 networks:
   edge:

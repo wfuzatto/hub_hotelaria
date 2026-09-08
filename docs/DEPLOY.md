@@ -30,6 +30,12 @@ Para GPU:
 make up-gpu
 ```
 
+## Versões
+
+Os módulos são fixados em `modules/modules.list`. O servidor nunca acompanha `main` automaticamente. Uma atualização de produção exige alterar explicitamente o commit/tag aprovado no repositório do HUB.
+
+As imagens-base também usam tags de versão fixas. Após o primeiro ciclo de homologação no hardware definitivo, registre também os digests SHA-256 das imagens aprovadas.
+
 ## Firewall
 
 Externamente, libere somente o estritamente necessário:
@@ -51,8 +57,12 @@ make update
 make health
 ```
 
-Se uma versão de aplicação causar regressão, volte o repositório do módulo ao commit/tag aprovado, reconstrua e suba novamente.
+`make update` instala somente os refs definidos no orquestrador e não executa `git pull main` dos módulos.
 
 ## Backup
 
 `make backup` gera dump MySQL e arquivo do volume persistente do Totem em `backups/`. Produção deve copiar estes arquivos para armazenamento externo ao servidor.
+
+## Logs
+
+Todos os serviços usam o driver Docker `local`, com rotação. Isso evita crescimento ilimitado dos arquivos de log no disco do host.

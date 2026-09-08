@@ -18,13 +18,15 @@ Cada repositório de módulo deve conter:
 
 ## Incorporação
 
-1. Adicione em `modules/modules.list`:
+1. Adicione em `modules/modules.list` usando uma **tag ou commit aprovado**, nunca `main` em produção:
 
 ```text
-meu_modulo|git@github.com:wfuzatto/meu_modulo.git
+meu_modulo|git@github.com:wfuzatto/meu_modulo.git|<commit-ou-tag-homologada>
 ```
 
-2. Adicione serviço no `compose.yml`:
+2. Rode `./scripts/bootstrap.sh`. O módulo será deixado em detached HEAD exatamente no ref aprovado.
+
+3. Adicione serviço no `compose.yml`:
 
 ```yaml
   meu-modulo:
@@ -37,12 +39,15 @@ meu_modulo|git@github.com:wfuzatto/meu_modulo.git
       - backend
     healthcheck:
       test: ["CMD", "...health..."]
+    logging: *default-logging
 ```
 
-3. Se precisar ser acessado externamente, crie hostname no `Caddyfile`. **Não use `ports:` no módulo.**
+4. Se precisar ser acessado externamente, crie hostname no `Caddyfile`. **Não use `ports:` no módulo.**
 
-4. Dados persistentes devem usar volume próprio.
+5. Dados persistentes devem usar volume próprio.
 
-5. Se usar banco, crie usuário e permissões exclusivos para o módulo quando ele entrar em produção.
+6. Se usar banco, crie usuário e permissões exclusivos para o módulo quando ele entrar em produção.
 
-6. Se usar GPU, mantenha um override separado e fallback CPU sempre que tecnicamente possível.
+7. Se usar GPU, mantenha um override separado e fallback CPU sempre que tecnicamente possível.
+
+8. Para promover uma versão nova, teste-a primeiro e só depois altere o ref em `modules/modules.list`. Isso transforma a mudança de produção em uma decisão explícita e auditável.
