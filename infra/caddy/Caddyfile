@@ -26,8 +26,5 @@
 
 {$FACE_SCANNER_DOMAIN} {
     import common_headers
-    request_body {
-        max_size 12MB
-    }
     reverse_proxy face-scanner:8091
 }

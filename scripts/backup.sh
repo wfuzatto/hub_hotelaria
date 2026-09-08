@@ -8,10 +8,6 @@ if [[ ! -f .env ]]; then
   exit 1
 fi
 
-set -a
-source .env
-set +a
-
 STAMP="$(date +%Y%m%d_%H%M%S)"
 DEST="$ROOT/backups/$STAMP"
 mkdir -p "$DEST"
@@ -24,7 +20,10 @@ docker compose --profile tools run --rm --no-deps backup-helper sh -c 'tar -czf 
 
 sha256sum "$DEST"/* > "$DEST/SHA256SUMS"
 
-RETENTION="${BACKUP_RETENTION_DAYS:-30}"
-find "$ROOT/backups" -mindepth 1 -maxdepth 1 -type d -mtime "+$RETENTION" -exec rm -rf {} +
+RETENTION="$(grep -E '^BACKUP_RETENTION_DAYS=' .env | tail -1 | cut -d= -f2- || true)"
+RETENTION="${RETENTION:-30}"
+if [[ "$RETENTION" =~ ^[0-9]+$ ]]; then
+  find "$ROOT/backups" -mindepth 1 -maxdepth 1 -type d -mtime "+$RETENTION" -exec rm -rf {} +
+fi
 
 echo "Backup concluído: $DEST"

@@ -19,6 +19,15 @@ fi
 if [[ ! -f .env ]]; then
   echo "ERRO: .env ausente. Execute: cp .env.example .env"
   fail=1
+else
+  if grep -q 'CHANGE_ME' .env; then
+    echo "ERRO: .env ainda contém segredos CHANGE_ME"
+    fail=1
+  fi
+  if grep -Eq '=(hub|totem|face)\.example\.com$' .env; then
+    echo "ERRO: troque os domínios example.com no .env"
+    fail=1
+  fi
 fi
 
 for dir in modules/totem_autoatendimento modules/face_scanner; do
