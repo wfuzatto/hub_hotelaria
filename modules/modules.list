@@ -3,4 +3,4 @@
 # atualize explicitamente o ref abaixo após testes/homologação.
 # Os módulos atuais são públicos e usam HTTPS para não exigir deploy key.
 totem_autoatendimento|https://github.com/wfuzatto/totem_autoatendimento.git|457088dfe1deaff04cefb272d62633173d88021f
-face_scanner|https://github.com/wfuzatto/face_scanner.git|12e6cd6dd976dd6752e128b3f61affc683817aed
+face_scanner|https://github.com/wfuzatto/face_scanner.git|acc38fa96cb22cdfdfa5a9f4bb35e32403e1f7f6
