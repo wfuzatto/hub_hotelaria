@@ -139,9 +139,12 @@ services:
       PORT: 8091
       API_KEY: ${FACE_SCANNER_API_KEY}
       MAX_UPLOAD_MB: ${FACE_SCANNER_MAX_UPLOAD_MB:-10}
+      SESSION_DB_PATH: /app/data/face_scanner.sqlite3
       ALLOWED_ORIGINS: https://${TOTEM_DOMAIN}
       DEBUG_STORE_IMAGES: "false"
       TZ: ${TZ:-America/Sao_Paulo}
+    volumes:
+      - face_scanner_data:/app/data
     expose:
       - "8091"
     networks:
@@ -178,3 +181,4 @@ volumes:
   caddy_config:
   mysql_data:
   totem_data:
+  face_scanner_data:

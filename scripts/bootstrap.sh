@@ -19,8 +19,9 @@ while IFS='|' read -r dest repo ref; do
   target="$ROOT/modules/$dest"
 
   if [[ -d "$target/.git" ]]; then
-    if ! git -C "$target" diff --quiet || ! git -C "$target" diff --cached --quiet; then
-      echo "ERRO: módulo $dest possui alterações locais. Não sobrescrevendo."
+    if [[ -n "$(git -C "$target" status --porcelain)" ]]; then
+      echo "ERRO: módulo $dest possui alterações/arquivos locais. Não sobrescrevendo."
+      git -C "$target" status --short
       exit 1
     fi
     echo "[fetch] $dest"

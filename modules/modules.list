@@ -3,4 +3,4 @@
 # atualize explicitamente o ref abaixo após testes/homologação.
 # Repositórios privados requerem chave SSH/deploy key do GitHub no servidor.
 totem_autoatendimento|git@github.com:wfuzatto/totem_autoatendimento.git|36a0b7c0bb1af928ab2935b04588addb6cb0ccb2
-face_scanner|git@github.com:wfuzatto/face_scanner.git|b5de22f6b4608bbe98a2158d4aa33187af81d600
+face_scanner|git@github.com:wfuzatto/face_scanner.git|c5b4432c3919bf91a5c94b97057268460dfe0cae
