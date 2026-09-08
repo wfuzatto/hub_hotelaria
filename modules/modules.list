@@ -2,5 +2,5 @@
 # Produção NÃO acompanha main automaticamente. Para publicar uma nova versão,
 # atualize explicitamente o ref abaixo após testes/homologação.
 # Os módulos atuais são públicos e usam HTTPS para não exigir deploy key.
-totem_autoatendimento|https://github.com/wfuzatto/totem_autoatendimento.git|fb760d9d27584bc8c22a21cde3fadbd26777ffdf
-face_scanner|https://github.com/wfuzatto/face_scanner.git|bc81592f1bc701ad2349d5a406dad0c9b553b012
+totem_autoatendimento|https://github.com/wfuzatto/totem_autoatendimento.git|17c9f09f002168d0adfe289cc92c817eeb99abc3
+face_scanner|https://github.com/wfuzatto/face_scanner.git|0b7641044be1d7001b64c18e623e5d7124196bd5
