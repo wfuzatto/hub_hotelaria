@@ -140,6 +140,7 @@ services:
       PORT: 8091
       API_KEY: ${FACE_SCANNER_API_KEY}
       MAX_UPLOAD_MB: ${FACE_SCANNER_MAX_UPLOAD_MB:-10}
+      MIN_BLUR_SCORE: ${FACE_SCANNER_MIN_BLUR_SCORE:-30}
       SESSION_DB_PATH: /app/data/face_scanner.sqlite3
       ALLOWED_ORIGINS: https://${TOTEM_DOMAIN}
       DEBUG_STORE_IMAGES: "false"
