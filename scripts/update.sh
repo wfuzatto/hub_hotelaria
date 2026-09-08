@@ -6,13 +6,16 @@ cd "$ROOT"
 
 SKIP_PULL=0
 USE_GPU="${USE_GPU:-0}"
+EDGE_MODE="${EDGE_MODE:-host}"
 
 for arg in "$@"; do
   case "$arg" in
     --no-pull) SKIP_PULL=1 ;;
     --gpu) USE_GPU=1 ;;
+    --docker-edge) EDGE_MODE=docker ;;
+    --host-edge) EDGE_MODE=host ;;
     *)
-      echo "Uso: $0 [--gpu] [--no-pull]"
+      echo "Uso: $0 [--gpu] [--host-edge|--docker-edge] [--no-pull]"
       exit 2
       ;;
   esac
@@ -24,7 +27,7 @@ if [[ ! -f .env ]]; then
 fi
 
 # Atualiza primeiro o repositório pai. Se o próprio script mudar durante o
-# fast-forward, reinicia a execução usando a nova versão do arquivo.
+# fast-forward, reinicia a execução usando a nova versão e o mesmo modo.
 if [[ "$SKIP_PULL" -eq 0 ]]; then
   if [[ -n "$(git status --porcelain --untracked-files=no)" ]]; then
     echo "ERRO: hub_hotelaria possui alterações locais em arquivos versionados."
@@ -48,13 +51,14 @@ if [[ "$SKIP_PULL" -eq 0 ]]; then
   if [[ "$local_sha" != "$remote_sha" ]]; then
     echo "[hub] fast-forward $local_sha -> $remote_sha"
     git merge --ff-only origin/main
-    if [[ "$USE_GPU" == "1" ]]; then
-      exec "$ROOT/scripts/update.sh" --no-pull --gpu
-    else
-      exec "$ROOT/scripts/update.sh" --no-pull
-    fi
+    args=(--no-pull)
+    [[ "$USE_GPU" == "1" ]] && args+=(--gpu)
+    [[ "$EDGE_MODE" == "docker" ]] && args+=(--docker-edge) || args+=(--host-edge)
+    exec "$ROOT/scripts/update.sh" "${args[@]}"
   fi
 fi
+
+echo "[mode] edge=$EDGE_MODE gpu=$USE_GPU"
 
 # Baixa/posiciona cada módulo exatamente no commit homologado de
 # modules/modules.list. Produção nunca acompanha main dos módulos diretamente.
@@ -62,9 +66,17 @@ echo "[modules] preparando versões aprovadas..."
 ./scripts/bootstrap.sh
 
 echo "[preflight] validando host/configuração..."
-./scripts/preflight.sh
+EDGE_MODE="$EDGE_MODE" USE_GPU="$USE_GPU" ./scripts/preflight.sh
 
 COMPOSE=(docker compose -f compose.yml)
+if [[ "$EDGE_MODE" == "host" ]]; then
+  # Caddy/NGINX já existentes no Ubuntu continuam na borda. Somente 127.0.0.1
+  # recebe portas do Totem/HUB; Face Scanner e MySQL ficam 100% internos.
+  COMPOSE+=( -f compose.host-edge.yml )
+else
+  # Use apenas depois que 80/443 forem liberadas no host.
+  COMPOSE+=( --profile docker-edge )
+fi
 if [[ "$USE_GPU" == "1" ]]; then
   echo "[gpu] override NVIDIA habilitado"
   COMPOSE+=( -f compose.gpu.yml )
@@ -79,7 +91,7 @@ if [[ -n "$mysql_cid" ]]; then
     echo "[backup] criando backup pré-atualização..."
     ./scripts/backup.sh
   else
-    echo "[backup] MySQL não está healthy; backup automático pré-update foi ignorado."
+    echo "[backup] MySQL Docker não está healthy; backup automático pré-update foi ignorado."
   fi
 fi
 
@@ -89,9 +101,10 @@ echo "[build] construindo imagens locais..."
 echo "[deploy] aplicando stack..."
 "${COMPOSE[@]}" up -d --remove-orphans
 
-# Espera os healthchecks dos serviços críticos. Isso evita informar sucesso
-# enquanto algum container ainda está reiniciando ou unhealthy.
-SERVICES=(gateway mysql hub-core totem-api face-scanner)
+SERVICES=(mysql hub-core totem-api face-scanner)
+if [[ "$EDGE_MODE" == "docker" ]]; then
+  SERVICES=(gateway "${SERVICES[@]}")
+fi
 DEADLINE=$((SECONDS + 180))
 
 while true; do
@@ -130,5 +143,11 @@ done
 printf '\n'
 
 "${COMPOSE[@]}" ps
+
+if [[ "$EDGE_MODE" == "host" ]]; then
+  echo "Totem Docker: http://${TOTEM_LOCAL_BIND:-127.0.0.1}:${TOTEM_LOCAL_PORT:-3080} (somente host)"
+  echo "HUB Docker:   http://${HUB_LOCAL_BIND:-127.0.0.1}:${HUB_LOCAL_PORT:-3083} (somente host)"
+  echo "Face Scanner: somente rede Docker em face-scanner:8091"
+fi
 
 echo "Atualização Docker concluída com sucesso."
