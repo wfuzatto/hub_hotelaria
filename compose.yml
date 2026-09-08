@@ -9,6 +9,7 @@ x-default-logging: &default-logging
 services:
   gateway:
     image: ${CADDY_IMAGE:-caddy:2.11.4-alpine}
+    profiles: ["docker-edge"]
     restart: unless-stopped
     env_file: .env
     ports:
