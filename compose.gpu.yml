@@ -1,0 +1,9 @@
+services:
+  face-scanner:
+    # Override opcional. O stack base funciona sem GPU.
+    # Requer NVIDIA Driver + NVIDIA Container Toolkit no host.
+    gpus: all
+    environment:
+      NVIDIA_VISIBLE_DEVICES: ${FACE_SCANNER_GPU_DEVICE:-0}
+      NVIDIA_DRIVER_CAPABILITIES: compute,utility,video
+      ACCELERATOR_PREFERENCE: cuda

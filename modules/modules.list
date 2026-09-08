@@ -1,0 +1,4 @@
+# destino|repositório
+# Repositórios privados requerem chave SSH/deploy key do GitHub no servidor.
+totem_autoatendimento|git@github.com:wfuzatto/totem_autoatendimento.git
+face_scanner|git@github.com:wfuzatto/face_scanner.git
