@@ -1,0 +1,13 @@
+services:
+  # Modo de transição para servidores que já possuem Caddy/NGINX no host.
+  # Somente loopback é publicado; nada fica exposto diretamente à LAN/Internet.
+  hub-core:
+    ports:
+      - "${HUB_LOCAL_BIND:-127.0.0.1}:${HUB_LOCAL_PORT:-3083}:80"
+
+  totem-api:
+    ports:
+      - "${TOTEM_LOCAL_BIND:-127.0.0.1}:${TOTEM_LOCAL_PORT:-3080}:3080"
+
+  # O Face Scanner permanece exclusivamente na rede Docker. O Totem o acessa
+  # por http://face-scanner:8091, sem disputar a porta 8091 existente no host.
