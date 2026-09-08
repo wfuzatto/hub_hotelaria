@@ -9,5 +9,7 @@ services:
     ports:
       - "${TOTEM_LOCAL_BIND:-127.0.0.1}:${TOTEM_LOCAL_PORT:-3080}:3080"
 
-  # O Face Scanner permanece exclusivamente na rede Docker. O Totem o acessa
-  # por http://face-scanner:8091, sem disputar a porta 8091 existente no host.
+  # Publica o Face Scanner para testes independentes na rede local.
+  face-scanner:
+    ports:
+      - "0.0.0.0:8092:8091"
