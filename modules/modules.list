@@ -2,5 +2,5 @@
 # Produção NÃO acompanha main automaticamente. Para publicar uma nova versão,
 # atualize explicitamente o ref abaixo após testes/homologação.
 # Repositórios privados requerem chave SSH/deploy key do GitHub no servidor.
-totem_autoatendimento|git@github.com:wfuzatto/totem_autoatendimento.git|36a0b7c0bb1af928ab2935b04588addb6cb0ccb2
-face_scanner|git@github.com:wfuzatto/face_scanner.git|c5b4432c3919bf91a5c94b97057268460dfe0cae
+totem_autoatendimento|git@github.com:wfuzatto/totem_autoatendimento.git|457088dfe1deaff04cefb272d62633173d88021f
+face_scanner|git@github.com:wfuzatto/face_scanner.git|311ab94e15f122c46a2044ecf3b8d1176a3647c9
