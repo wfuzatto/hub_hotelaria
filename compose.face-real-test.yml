@@ -1,0 +1,7 @@
+services:
+  face-scanner:
+    environment:
+      APP_ENV: homologation
+      FACE_VERIFICATION_PROVIDER: internal
+      FACE_REVIEW_THRESHOLD: ${FACE_REVIEW_THRESHOLD:?set externally calibrated review threshold}
+      FACE_MATCH_THRESHOLD: ${FACE_MATCH_THRESHOLD:?set externally calibrated match threshold}
