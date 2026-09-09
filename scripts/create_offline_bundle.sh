@@ -44,9 +44,10 @@ chmod 600 "$DEST/.env"
 
 echo "[2/5] Arquivando código, configurações e artefatos locais..."
 # Inclui os repositórios .git dos módulos para permitir recuperação sem GitHub.
-# Exclui apenas o diretório onde o próprio bundle está sendo criado para evitar recursão.
+# Backups de dados são tratados separadamente por scripts/backup.sh para evitar duplicação pesada.
 tar \
   --exclude='./offline-bundles' \
+  --exclude='./backups' \
   -C "$ROOT" \
   -czf "$DEST/project-source.tar.gz" \
   .
