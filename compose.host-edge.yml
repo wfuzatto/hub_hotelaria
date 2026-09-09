@@ -9,6 +9,10 @@ services:
     ports:
       - "${TOTEM_LOCAL_BIND:-127.0.0.1}:${TOTEM_LOCAL_PORT:-3080}:3080"
 
+  totem-food:
+    ports:
+      - "${TOTEM_FOOD_LOCAL_BIND:-127.0.0.1}:${TOTEM_FOOD_LOCAL_PORT:-3085}:3088"
+
   # Publica o Face Scanner para testes independentes na rede local.
   # O provider mock abaixo é EXCLUSIVO de homologação: ele não compara identidades.
   face-scanner:

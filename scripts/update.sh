@@ -71,7 +71,7 @@ EDGE_MODE="$EDGE_MODE" USE_GPU="$USE_GPU" ./scripts/preflight.sh
 COMPOSE=(docker compose -f compose.yml)
 if [[ "$EDGE_MODE" == "host" ]]; then
   # Caddy/NGINX já existentes no Ubuntu continuam na borda. Somente 127.0.0.1
-  # recebe portas do Totem/HUB; Face Scanner e MySQL ficam 100% internos.
+  # recebe portas do Totem/HUB/Totem Food; Face Scanner e MySQL ficam internos.
   COMPOSE+=( -f compose.host-edge.yml )
 else
   # Use apenas depois que 80/443 forem liberadas no host.
@@ -83,7 +83,7 @@ if [[ "$USE_GPU" == "1" ]]; then
 fi
 
 # Faz backup antes de alterar containers quando já existe uma instalação em
-# execução. Em primeiro deploy não há banco saudável e esta etapa é ignorada.
+# execução. O dump usa --all-databases e inclui hub_hotelaria + totem_food.
 mysql_cid="$(docker compose -f compose.yml ps -q mysql 2>/dev/null || true)"
 if [[ -n "$mysql_cid" ]]; then
   mysql_health="$(docker inspect --format '{{if .State.Health}}{{.State.Health.Status}}{{else}}{{.State.Status}}{{end}}' "$mysql_cid" 2>/dev/null || true)"
@@ -98,10 +98,41 @@ fi
 echo "[build] construindo imagens locais..."
 "${COMPOSE[@]}" build
 
+# O Totem Food usa o mesmo MySQL do HUB, porém em banco isolado. Primeiro
+# garante que o MySQL esteja saudável; depois cria banco/permissão idempotentes.
+echo "[db] garantindo MySQL e banco totem_food..."
+"${COMPOSE[@]}" up -d mysql
+
+mysql_deadline=$((SECONDS + 180))
+while true; do
+  mysql_cid="$("${COMPOSE[@]}" ps -q mysql 2>/dev/null || true)"
+  mysql_state=""
+  if [[ -n "$mysql_cid" ]]; then
+    mysql_state="$(docker inspect --format '{{if .State.Health}}{{.State.Health.Status}}{{else}}{{.State.Status}}{{end}}' "$mysql_cid" 2>/dev/null || true)"
+  fi
+
+  if [[ "$mysql_state" == "healthy" ]]; then
+    break
+  fi
+
+  if (( SECONDS >= mysql_deadline )); then
+    echo "ERRO: timeout aguardando MySQL saudável: ${mysql_state:-missing}"
+    "${COMPOSE[@]}" ps
+    exit 1
+  fi
+
+  printf '\r[db] aguardando MySQL: %s' "${mysql_state:-missing}"
+  sleep 3
+done
+printf '\n'
+
+"${COMPOSE[@]}" exec -T mysql sh -ec \
+  'mysql -uroot -p"$MYSQL_ROOT_PASSWORD" -e "CREATE DATABASE IF NOT EXISTS \`totem_food\` CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci; GRANT ALL PRIVILEGES ON \`totem_food\`.* TO \`$MYSQL_USER\`@\`%\`; FLUSH PRIVILEGES;"'
+
 echo "[deploy] aplicando stack..."
 "${COMPOSE[@]}" up -d --remove-orphans
 
-SERVICES=(mysql hub-core totem-api face-scanner)
+SERVICES=(mysql hub-core totem-api totem-food face-scanner)
 if [[ "$EDGE_MODE" == "docker" ]]; then
   SERVICES=(gateway "${SERVICES[@]}")
 fi
@@ -145,7 +176,8 @@ printf '\n'
 "${COMPOSE[@]}" ps
 
 if [[ "$EDGE_MODE" == "host" ]]; then
-  echo "Totem Docker: http://${TOTEM_LOCAL_BIND:-127.0.0.1}:${TOTEM_LOCAL_PORT:-3080} (somente host)"
+  echo "Totem Hotel:  http://${TOTEM_LOCAL_BIND:-127.0.0.1}:${TOTEM_LOCAL_PORT:-3080} (somente host)"
+  echo "Totem Food:   http://${TOTEM_FOOD_LOCAL_BIND:-127.0.0.1}:${TOTEM_FOOD_LOCAL_PORT:-3085} (somente host)"
   echo "HUB Docker:   http://${HUB_LOCAL_BIND:-127.0.0.1}:${HUB_LOCAL_PORT:-3083} (somente host)"
   echo "Face Scanner: somente rede Docker em face-scanner:8091"
 fi

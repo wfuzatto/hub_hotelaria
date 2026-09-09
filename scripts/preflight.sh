@@ -75,7 +75,11 @@ done < modules/modules.list
 # Modo host-edge: Caddy/NGINX existentes continuam donos de 80/443 e o stack
 # publica somente loopback para os serviços que o proxy precisa alcançar.
 if [[ "$EDGE_MODE" == "host" ]] && command -v ss >/dev/null 2>&1; then
-  for spec in "totem-api:${TOTEM_LOCAL_PORT:-3080}" "hub-core:${HUB_LOCAL_PORT:-3083}"; do
+  for spec in \
+    "totem-api:${TOTEM_LOCAL_PORT:-3080}" \
+    "totem-food:${TOTEM_FOOD_LOCAL_PORT:-3085}" \
+    "hub-core:${HUB_LOCAL_PORT:-3083}"
+  do
     service="${spec%%:*}"
     port="${spec##*:}"
     cid="$(docker compose -f compose.yml -f compose.host-edge.yml ps -q "$service" 2>/dev/null || true)"
