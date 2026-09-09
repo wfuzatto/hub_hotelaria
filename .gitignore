@@ -1,5 +1,6 @@
 .env
 backups/
+offline-bundles/
 modules/*
 !modules/modules.list
 !modules/.gitkeep
